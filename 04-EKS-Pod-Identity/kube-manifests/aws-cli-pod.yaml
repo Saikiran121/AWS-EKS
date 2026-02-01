@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: aws-cli-test
+  namespace: default
+spec:
+  # CRITICAL: Link to the ServiceAccount we created!
+  serviceAccountName: pod-identity-sa
+  
+  containers:
+    - name: aws-cli
+      image: amazon/aws-cli:latest
+      # Keep the pod alive for testing
+      command: ["sleep", "3600"]
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "200m"
+          memory: "256Mi"
