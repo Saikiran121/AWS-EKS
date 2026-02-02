@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: usermgmt-microservice-quota-test
+  namespace: dev
+  labels:
+    app: usermgmt-restapp
+spec:
+  # 🧪 TEST: Set replicas to 15. 
+  # Since our quota 'pods' is 10, only 10 will start!
+  replicas: 15 
+  selector:
+    matchLabels:
+      app: usermgmt-restapp
+  template:  
+    metadata:
+      labels: 
+        app: usermgmt-restapp
+    spec:
+      containers:
+        - name: usermgmt-restapp
+          image: stacksimplify/kube-usermanagement-microservice:1.0.0
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          ports: 
+            - containerPort: 8095           

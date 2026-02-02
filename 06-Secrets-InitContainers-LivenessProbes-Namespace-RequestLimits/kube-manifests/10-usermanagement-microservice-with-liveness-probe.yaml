@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: usermgmt-microservice
+  labels:
+    app: usermgmt-restapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: usermgmt-restapp
+  template:  
+    metadata:
+      labels: 
+        app: usermgmt-restapp
+    spec:
+      initContainers:
+        - name: init-db
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nslookup mysql.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mysql; sleep 2; done;']
+      containers:
+        - name: usermgmt-restapp
+          image: stacksimplify/kube-usermanagement-microservice:1.0.0
+          ports: 
+            - containerPort: 8095           
+          env:
+            - name: DB_HOSTNAME
+              value: "mysql"            
+            - name: DB_PORT
+              value: "3306"            
+            - name: DB_NAME
+              value: "usermgmt"            
+            - name: DB_USERNAME
+              value: "root"            
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-db-password
+                  key: password
+          livenessProbe:
+            httpGet:
+              path: /usermgmt/health-status
+              port: 8095
+            initialDelaySeconds: 60
+            periodSeconds: 10
